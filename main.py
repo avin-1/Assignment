@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, send_from_directory
 from flask_cors import CORS
 import sqlite3
 import pandas as pd
@@ -11,11 +11,14 @@ from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 
 load_dotenv()
-app = Flask(__name__)
+app = Flask(__name__, static_folder="frontend/dist", static_url_path="/")
 CORS(app)
 
 DB = "candidates.db"
-FRONTEND_BASE_URL = os.environ.get("FRONTEND_BASE_URL", "http://localhost:5173")
+# Use SPACE_HOST provided by Hugging Face Spaces if present
+hf_host = os.environ.get("SPACE_HOST")
+default_frontend_url = f"https://{hf_host}" if hf_host else "http://localhost:5173"
+FRONTEND_BASE_URL = os.environ.get("FRONTEND_BASE_URL", default_frontend_url)
 
 # ─────────────────────────────────────
 # DB helpers
@@ -386,10 +389,19 @@ def get_responses():
         conn.close()
 
 
-@app.route('/')
-def home():
+@app.route('/api/status')
+def status():
     return jsonify({"status": "OmniMise API running"}), 200
+
+@app.route('/', defaults={'path': ''})
+@app.route('/<path:path>')
+def serve_frontend(path):
+    if path != "" and os.path.exists(os.path.join(app.static_folder, path)):
+        return send_from_directory(app.static_folder, path)
+    else:
+        return send_from_directory(app.static_folder, 'index.html')
 
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    port = int(os.environ.get("PORT", 7860))
+    app.run(host="0.0.0.0", port=port, debug=False)
