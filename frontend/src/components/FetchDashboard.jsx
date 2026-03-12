@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { RefreshCw } from 'lucide-react';
 import axios from 'axios';
 
-const API = 'http://127.0.0.1:5000';
+const API = '';
 
 const FIT_COLORS = {
   High: '#00e676',
