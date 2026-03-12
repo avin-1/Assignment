@@ -22,7 +22,7 @@ export default function AgentGenerator() {
     const fd = new FormData();
     fd.append('file', file);
     try {
-      const res = await axios.post(`${API}/upload-candidates`, fd);
+      const res = await axios.post(`${API}/api/upload-candidates`, fd);
       setUploadStatus(res.data.message);
       setStep(1);
     } catch (e) {
@@ -38,7 +38,7 @@ export default function AgentGenerator() {
     setIsProcessing(true);
     setError(null);
     try {
-      const res = await axios.post(`${API}/start-session`, { text: rulesText });
+      const res = await axios.post(`${API}/api/start-session`, { text: rulesText });
       setSessionResult(res.data);
       setStep(2);
     } catch (e) {

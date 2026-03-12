@@ -22,7 +22,7 @@ export default function FetchDashboard() {
     setIsFetching(true);
     setError(null);
     try {
-      const res = await axios.get(`${API}/responses`);
+      const res = await axios.get(`${API}/api/responses`);
       setResponses(res.data);
       setFetched(true);
     } catch (e) {
