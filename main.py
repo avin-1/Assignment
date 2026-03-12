@@ -6,9 +6,7 @@ import os
 import uuid
 import json
 from dotenv import load_dotenv
-import smtplib
-from email.mime.text import MIMEText
-from email.mime.multipart import MIMEMultipart
+import resend
 
 load_dotenv()
 app = Flask(__name__, static_folder="frontend/dist", static_url_path="/")
@@ -65,19 +63,19 @@ def init_db():
 init_db()
 
 # ─────────────────────────────────────
-# Email helper
+# Email helper  (uses Resend HTTPS API — works on HuggingFace)
 # ─────────────────────────────────────
 def send_email(to_email: str, candidate_name: str, chat_url: str) -> bool:
-    sender_email = os.environ.get("SENDER_EMAIL")
-    sender_password = os.environ.get("SENDER_PASSWORD")
-    smtp_server = os.environ.get("SMTP_SERVER", "smtp.gmail.com")
-    smtp_port = int(os.environ.get("SMTP_PORT", 587))
+    api_key = os.environ.get("RESEND_API_KEY")
+    sender = os.environ.get("SENDER_EMAIL", "onboarding@resend.dev")
 
-    if not sender_email or not sender_password:
-        print("Missing email credentials")
+    if not api_key:
+        print("[email] Missing RESEND_API_KEY — email not sent")
         return False
 
-    body = f"""
+    resend.api_key = api_key
+
+    html_body = f"""
     <html><body>
       <div style="font-family:Arial,sans-serif;padding:20px;color:#1a1a2e;max-width:600px;margin:auto;">
         <div style="background:linear-gradient(135deg,#667eea,#764ba2);padding:30px;border-radius:12px 12px 0 0;text-align:center;">
@@ -103,28 +101,14 @@ def send_email(to_email: str, candidate_name: str, chat_url: str) -> bool:
     """
 
     try:
-        msg = MIMEMultipart()
-        msg['From'] = sender_email
-        msg['To'] = to_email
-        msg['Subject'] = "You're Invited: AI Screening Interview"
-        msg.attach(MIMEText(body, 'html'))
-        # Try STARTTLS (port 587) first, fallback to SSL (port 465)
-        try:
-            server = smtplib.SMTP(smtp_server, smtp_port, timeout=15)
-            server.ehlo()
-            server.starttls()
-            server.ehlo()
-            server.login(sender_email, sender_password)
-            server.send_message(msg)
-            server.quit()
-        except smtplib.SMTPException as starttls_err:
-            print(f"[email] STARTTLS failed ({starttls_err}), trying SSL on port 465…")
-            import ssl
-            context = ssl.create_default_context()
-            with smtplib.SMTP_SSL(smtp_server, 465, context=context, timeout=15) as server_ssl:
-                server_ssl.login(sender_email, sender_password)
-                server_ssl.send_message(msg)
-        print(f"[email] Sent successfully to {to_email}")
+        params = resend.Emails.SendParams(
+            from_=f"OmniMise <{sender}>",
+            to=[to_email],
+            subject="You're Invited: AI Screening Interview",
+            html=html_body,
+        )
+        r = resend.Emails.send(params)
+        print(f"[email] Sent to {to_email} — id: {r.get('id')}")
         return True
     except Exception as e:
         print(f"[email] FAILED to send to {to_email}: {type(e).__name__}: {e}")
