@@ -1,0 +1,22 @@
+# Python-generated files
+__pycache__/
+*.py[oc]
+build/
+dist/
+wheels/
+*.egg-info
+
+# Virtual environments
+.venv
+
+# Secrets
+**/.env
+Agent/service_account.json
+Agent/token.json
+
+# Databases
+*.db
+
+
+Agent/service_account.json
+Agent/token.json
