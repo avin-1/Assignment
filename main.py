@@ -101,12 +101,12 @@ def send_email(to_email: str, candidate_name: str, chat_url: str) -> bool:
     """
 
     try:
-        params = resend.Emails.SendParams(
-            from_=f"OmniMise <{sender}>",
-            to=[to_email],
-            subject="You're Invited: AI Screening Interview",
-            html=html_body,
-        )
+        params: resend.Emails.SendParams = {
+            "from": f"OmniMise <{sender}>",
+            "to": [to_email],
+            "subject": "You're Invited: AI Screening Interview",
+            "html": html_body,
+        }
         r = resend.Emails.send(params)
         print(f"[email] Sent to {to_email} — id: {r.get('id')}")
         return True
