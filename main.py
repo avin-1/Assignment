@@ -120,7 +120,7 @@ def send_email(to_email: str, candidate_name: str, chat_url: str) -> bool:
 # ─────────────────────────────────────
 # 1. Upload Candidates
 # ─────────────────────────────────────
-@app.route('/upload-candidates', methods=['POST'])
+@app.route('/api/upload-candidates', methods=['POST'])
 def upload_candidates():
     if 'file' not in request.files:
         return jsonify({"error": "No file in request"}), 400
@@ -165,7 +165,7 @@ def upload_candidates():
 from Agent.ruleAgent import process_prompt_with_agent
 from Agent.chatAgent import generate_questions_from_rules
 
-@app.route('/start-session', methods=['POST'])
+@app.route('/api/start-session', methods=['POST'])
 def start_session():
     data = request.get_json()
     if not data or 'text' not in data:
@@ -237,7 +237,7 @@ def start_session():
 # ─────────────────────────────────────
 # 3. Get Session Info (candidate loads chat page)
 # ─────────────────────────────────────
-@app.route('/chat/<session_id>', methods=['GET'])
+@app.route('/api/chat/<session_id>', methods=['GET'])
 def get_session(session_id):
     conn = get_db()
     c = conn.cursor()
@@ -262,7 +262,7 @@ def get_session(session_id):
 # ─────────────────────────────────────
 from Agent.chatAgent import chat_turn, start_interview
 
-@app.route('/chat/<session_id>/message', methods=['POST'])
+@app.route('/api/chat/<session_id>/message', methods=['POST'])
 def send_message(session_id):
     data = request.get_json()
     user_message = data.get('message', '').strip()
@@ -321,7 +321,7 @@ def send_message(session_id):
 # ─────────────────────────────────────
 # 5. Start interview (first AI message when candidate loads)
 # ─────────────────────────────────────
-@app.route('/chat/<session_id>/start', methods=['POST'])
+@app.route('/api/chat/<session_id>/start', methods=['POST'])
 def start_chat(session_id):
     conn = get_db()
     c = conn.cursor()
@@ -359,7 +359,7 @@ def start_chat(session_id):
 # ─────────────────────────────────────
 # 6. Fetch all interview responses (HR dashboard)
 # ─────────────────────────────────────
-@app.route('/responses', methods=['GET'])
+@app.route('/api/responses', methods=['GET'])
 def get_responses():
     conn = get_db()
     c = conn.cursor()

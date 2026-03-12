@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useParams } from 'react-router-dom';
 import axios from 'axios';
 
-const API = 'http://127.0.0.1:5000';
+const API = '';
 
 export default function ChatRoom() {
   const { sessionId } = useParams();
@@ -26,7 +26,7 @@ export default function ChatRoom() {
     const init = async () => {
       try {
         // 1. Load session info
-        const info = await axios.get(`${API}/chat/${sessionId}`);
+        const info = await axios.get(`${API}/api/chat/${sessionId}`);
         setSessionInfo(info.data);
 
         // If already has history, populate messages
@@ -42,7 +42,7 @@ export default function ChatRoom() {
         }
 
         // 2. Start interview — get first AI message
-        const start = await axios.post(`${API}/chat/${sessionId}/start`);
+        const start = await axios.post(`${API}/api/chat/${sessionId}/start`);
         setMessages([{ role: 'assistant', content: start.data.reply }]);
         setStarted(true);
       } catch (e) {
@@ -62,7 +62,7 @@ export default function ChatRoom() {
     setIsLoading(true);
 
     try {
-      const res = await axios.post(`${API}/chat/${sessionId}/message`, { message: msg });
+      const res = await axios.post(`${API}/api/chat/${sessionId}/message`, { message: msg });
       setMessages([...newMessages, { role: 'assistant', content: res.data.reply }]);
       if (res.data.is_complete) setIsComplete(true);
     } catch (e) {
