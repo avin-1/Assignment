@@ -108,14 +108,28 @@ def send_email(to_email: str, candidate_name: str, chat_url: str) -> bool:
         msg['To'] = to_email
         msg['Subject'] = "You're Invited: AI Screening Interview"
         msg.attach(MIMEText(body, 'html'))
-        server = smtplib.SMTP(smtp_server, smtp_port)
-        server.starttls()
-        server.login(sender_email, sender_password)
-        server.send_message(msg)
-        server.quit()
+        # Try STARTTLS (port 587) first, fallback to SSL (port 465)
+        try:
+            server = smtplib.SMTP(smtp_server, smtp_port, timeout=15)
+            server.ehlo()
+            server.starttls()
+            server.ehlo()
+            server.login(sender_email, sender_password)
+            server.send_message(msg)
+            server.quit()
+        except smtplib.SMTPException as starttls_err:
+            print(f"[email] STARTTLS failed ({starttls_err}), trying SSL on port 465…")
+            import ssl
+            context = ssl.create_default_context()
+            with smtplib.SMTP_SSL(smtp_server, 465, context=context, timeout=15) as server_ssl:
+                server_ssl.login(sender_email, sender_password)
+                server_ssl.send_message(msg)
+        print(f"[email] Sent successfully to {to_email}")
         return True
     except Exception as e:
-        print(f"Failed to send email to {to_email}: {e}")
+        print(f"[email] FAILED to send to {to_email}: {type(e).__name__}: {e}")
+        import traceback
+        traceback.print_exc()
         return False
 
 
