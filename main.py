@@ -391,13 +391,16 @@ def get_responses():
 def status():
     return jsonify({"status": "OmniMise API running"}), 200
 
-@app.route('/', defaults={'path': ''})
-@app.route('/<path:path>')
-def serve_frontend(path):
-    # Try finding the exact file requested
-    if path != "" and os.path.exists(os.path.join(app.static_folder, path)):
-        return send_from_directory(app.static_folder, path)
-    # Otherwise, it's a React Router path, return index.html
+@app.route('/')
+def index():
+    return send_from_directory(app.static_folder, 'index.html')
+
+@app.errorhandler(404)
+def not_found(e):
+    # If the request is for an /api route, return a real 404 JSON
+    if request.path.startswith('/api/'):
+        return jsonify({"error": "Resource not found"}), 404
+    # Otherwise, serve index.html for React Router to handle
     return send_from_directory(app.static_folder, 'index.html')
 
 if __name__ == "__main__":
